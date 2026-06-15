@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: zenon_plus_v2_frontend
+    networks:
+      - zenon-internal
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: zenon_plus_v2_backend
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    networks:
+      - zenon-internal
+  db:
+    image: postgres:15-alpine
+    container_name: zenon_plus_v2_db
+    environment:
+      POSTGRES_DB: zenon_plus_v2
+      POSTGRES_USER: zenonadmin
+      POSTGRES_PASSWORD: Zenon@2024Secure
+    networks:
+      - zenon-internal
+  nginx:
+    image: nginx:alpine
+    container_name: zenon_plus_v2_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - zenon-internal
+networks:
+  zenon-internal:
+    driver: bridge
