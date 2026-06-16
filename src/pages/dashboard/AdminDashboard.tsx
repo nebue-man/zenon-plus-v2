@@ -4,6 +4,7 @@ import { useDashboard } from '../../hooks/useDashboard';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useCommissions } from '../../hooks/useCommissions';
 import { useVerifications } from '../../hooks/useVerifications';
+import { useBankSlips } from '../../hooks/useBankSlips';
 import { useAuth } from '../../context/useAuth';
 import { SummaryCard } from '../../components/SummaryCard';
 import { Badge } from '../../components/Badge';
@@ -11,6 +12,7 @@ import { Pagination } from '../../components/Pagination';
 import { Modal } from '../../components/Modal';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { IDPhotoViewer } from '../../components/IDPhotoViewer';
+import { BankSlipQueue } from '../../components/BankSlipQueue';
 import { EarningsChart } from '../../components/EarningsChart';
 import { Toast, ToastType } from '../../components/Toast';
 import { InviteSection } from '../../components/InviteSection';
@@ -77,6 +79,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
     verifyUser,
     refresh: refreshVerifs,
   } = useVerifications();
+
+  // Bank Slip Review Queue (admin sees pending slips from managers)
+  const { reviewQueue: slipQueue, loadingQueue: slipQueueLoading, reviewing: slipReviewing, reviewSlip } = useBankSlips();
 
   // Component-local state variables for modals & overlays
   const [toastMsg, setToastMsg] = useState('');
@@ -778,6 +783,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
               onPageChange={(p) => setTxFilters({ page: p })}
             />
           </div>
+
+          {/* Bank Slip Review Queue — managers' pending slips awaiting admin approval */}
+          <BankSlipQueue
+            queue={slipQueue}
+            loading={slipQueueLoading}
+            reviewing={slipReviewing}
+            onReview={reviewSlip}
+          />
 
         </div>
       )}

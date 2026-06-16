@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useTransactions } from '../../hooks/useTransactions';
+import { useBankSlips } from '../../hooks/useBankSlips';
 import { useAuth } from '../../context/useAuth';
 import { SummaryCard } from '../../components/SummaryCard';
 import { Badge } from '../../components/Badge';
@@ -9,6 +10,7 @@ import { EarningsChart } from '../../components/EarningsChart';
 import { Toast, ToastType } from '../../components/Toast';
 import { InviteSection } from '../../components/InviteSection';
 import { IDPhotoViewer } from '../../components/IDPhotoViewer';
+import { BankSlipSubmit } from '../../components/BankSlipSubmit';
 import { formatLKR, formatDate, formatPercent } from '../../utils/format';
 import { API_ENDPOINTS } from '../../utils/constants';
 import api from '../../api/axios';
@@ -40,6 +42,9 @@ export default function SubagentDashboard({ activeTab, setActiveTab }: SubagentD
     updateFilters: setTxFilters,
     refresh: refreshTx,
   } = useTransactions();
+
+  // Bank Slip Submit
+  const { mySlips, loadingMy: slipLoadingMy, submitting: slipSubmitting, submitSlip } = useBankSlips();
 
   // Re-upload state if previously rejected
   const [newIdPhoto, setNewIdPhoto] = useState<string | null>(null);
@@ -203,6 +208,14 @@ export default function SubagentDashboard({ activeTab, setActiveTab }: SubagentD
             <p className="text-xs text-slate-400 uppercase font-mono tracking-wider">Subagent Log</p>
             <h2 className="text-xl font-bold text-slate-950">My Deposits &amp; Withdrawals</h2>
           </div>
+
+          {/* Bank slip submission form + history */}
+          <BankSlipSubmit
+            mySlips={mySlips}
+            loadingMy={slipLoadingMy}
+            submitting={slipSubmitting}
+            onSubmit={submitSlip}
+          />
 
           {/* Filter Bar */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex items-center justify-between">

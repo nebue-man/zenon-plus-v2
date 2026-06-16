@@ -141,3 +141,22 @@ export interface GeneratedInvite {
   expires_at: string;
   capacity: { current: number; max: number };
 }
+
+export interface BankSlipRequest {
+  id: string;
+  amount: number;
+  bankName?: string;
+  slipUrl: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectReason?: string;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedByName?: string;
+  transactionId?: string;
+}
+
+export interface BankSlipReviewItem extends BankSlipRequest {
+  submittedById: string;
+  submittedByName: string;
+  submittedByRole: string;
+}

@@ -5,12 +5,15 @@ import { useTeam } from '../../hooks/useTeam';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useCommissions } from '../../hooks/useCommissions';
 import { useVerifications } from '../../hooks/useVerifications';
+import { useBankSlips } from '../../hooks/useBankSlips';
 import { SummaryCard } from '../../components/SummaryCard';
 import { Badge } from '../../components/Badge';
 import { Pagination } from '../../components/Pagination';
 import { Modal } from '../../components/Modal';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { IDPhotoViewer } from '../../components/IDPhotoViewer';
+import { BankSlipSubmit } from '../../components/BankSlipSubmit';
+import { BankSlipQueue } from '../../components/BankSlipQueue';
 import { EarningsChart } from '../../components/EarningsChart';
 import { Toast, ToastType } from '../../components/Toast';
 import { InviteSection } from '../../components/InviteSection';
@@ -72,6 +75,9 @@ export default function ManagerDashboard({ activeTab, setActiveTab }: ManagerDas
     verifyUser,
     refresh: refreshVerifs,
   } = useVerifications();
+
+  // Bank Slip Submit + Review Queue
+  const { mySlips, reviewQueue: slipQueue, loadingMy: slipLoadingMy, loadingQueue: slipQueueLoading, submitting: slipSubmitting, reviewing: slipReviewing, submitSlip, reviewSlip } = useBankSlips();
 
   // Local notifications states
   const [toastMsg, setToastMsg] = useState('');
@@ -476,6 +482,22 @@ export default function ManagerDashboard({ activeTab, setActiveTab }: ManagerDas
               />
             </div>
           </div>
+
+          {/* Bank slip submission form + history */}
+          <BankSlipSubmit
+            mySlips={mySlips}
+            loadingMy={slipLoadingMy}
+            submitting={slipSubmitting}
+            onSubmit={submitSlip}
+          />
+
+          {/* Bank Slip Review Queue — agents' pending slips awaiting manager approval */}
+          <BankSlipQueue
+            queue={slipQueue}
+            loading={slipQueueLoading}
+            reviewing={slipReviewing}
+            onReview={reviewSlip}
+          />
 
           {/* Scoped list */}
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">

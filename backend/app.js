@@ -12,6 +12,7 @@ const transactionsRouter = require('./routes/transactions');
 const commissionsRouter = require('./routes/commissions');
 const hierarchyRouter = require('./routes/hierarchy');
 const adminRouter = require('./routes/admin');
+const bankSlipsRouter = require('./routes/bankSlips');
 const { scheduleMontlyReset } = require('./cron/monthlyReset');
 
 const app = express();
@@ -71,6 +72,7 @@ app.use('/api/v1/transactions', transactionsRouter);
 app.use('/api/v1/commissions', commissionsRouter);
 app.use('/api/v1/hierarchy', hierarchyRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/bank-slips', bankSlipsRouter);
 
 // 404 handler
 app.use((req, res) => {

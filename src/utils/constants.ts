@@ -65,6 +65,12 @@ export const API_ENDPOINTS = {
     downline: (userId: string) => `/hierarchy/downline/${userId}`,
     capacity: (userId: string) => `/hierarchy/capacity/${userId}`,
   },
+  bankSlips: {
+    submit: '/bank-slips',
+    my: '/bank-slips/my',
+    reviewQueue: '/bank-slips/review-queue',
+    review: (id: string) => `/bank-slips/${id}/review`,
+  },
   admin: {
     users: '/admin/users',
     userById: (id: string) => `/admin/users/${id}`,

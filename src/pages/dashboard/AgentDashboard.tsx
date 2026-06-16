@@ -4,6 +4,7 @@ import { useTeam } from '../../hooks/useTeam';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useCommissions } from '../../hooks/useCommissions';
 import { useVerifications } from '../../hooks/useVerifications';
+import { useBankSlips } from '../../hooks/useBankSlips';
 import { useAuth } from '../../context/useAuth';
 import { SummaryCard } from '../../components/SummaryCard';
 import { Badge } from '../../components/Badge';
@@ -12,6 +13,8 @@ import { Modal } from '../../components/Modal';
 import { Toast, ToastType } from '../../components/Toast';
 import { InviteSection } from '../../components/InviteSection';
 import { IDPhotoViewer } from '../../components/IDPhotoViewer';
+import { BankSlipSubmit } from '../../components/BankSlipSubmit';
+import { BankSlipQueue } from '../../components/BankSlipQueue';
 import { EarningsChart } from '../../components/EarningsChart';
 import { SubagentThresholdTable } from '../../components/SubagentThresholdTable';
 import { AgentUnlockBanner } from '../../components/AgentUnlockBanner';
@@ -75,6 +78,9 @@ export default function AgentDashboard({ activeTab, setActiveTab }: AgentDashboa
     verifyUser,
     refresh: refreshVerifs,
   } = useVerifications();
+
+  // Bank Slip Submit + Review Queue
+  const { mySlips, reviewQueue: slipQueue, loadingMy: slipLoadingMy, loadingQueue: slipQueueLoading, submitting: slipSubmitting, reviewing: slipReviewing, submitSlip, reviewSlip } = useBankSlips();
 
   // Form notifications
   const [toastMsg, setToastMsg] = useState('');
@@ -353,6 +359,22 @@ export default function AgentDashboard({ activeTab, setActiveTab }: AgentDashboa
               <Plus className="h-4 w-4" /> Book Transaction
             </button>
           </div>
+
+          {/* Bank slip submission form + history */}
+          <BankSlipSubmit
+            mySlips={mySlips}
+            loadingMy={slipLoadingMy}
+            submitting={slipSubmitting}
+            onSubmit={submitSlip}
+          />
+
+          {/* Bank Slip Review Queue — subagents' pending slips awaiting agent approval */}
+          <BankSlipQueue
+            queue={slipQueue}
+            loading={slipQueueLoading}
+            reviewing={slipReviewing}
+            onReview={reviewSlip}
+          />
 
           {/* Filters shelf */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm grid grid-cols-1 gap-4 sm:grid-cols-2">
