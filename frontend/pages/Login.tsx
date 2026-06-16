@@ -81,7 +81,7 @@ export default function Login() {
             ZP
           </div>
           <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900">
-            Zenon Plus
+            Zimplexline
           </h2>
           <p className="mt-2 text-sm font-medium text-slate-500">
             Affiliate network management, simplified

@@ -31,7 +31,7 @@ async function saveIdPhoto(base64DataOrFile) {
   if (process.env.CLOUDINARY_URL || process.env.CLOUDINARY_CLOUD_NAME) {
     const cloudinary = require('cloudinary').v2;
     const result = await cloudinary.uploader.upload(base64DataOrFile, {
-      folder: 'zenon_plus/id_photos',
+      folder: 'zimplexline/id_photos',
       resource_type: 'auto',
     });
     return result.secure_url;

@@ -112,7 +112,7 @@ export default function Register() {
     const errors: Record<string, string> = {};
     if (!fullName.trim()) errors.fullName = 'Full name is required.';
     if (!dob) errors.dob = 'Date of birth is required.';
-    else if (!validateAge(dob)) errors.dob = 'You must be at least 18 years old to join Zenon Plus.';
+    else if (!validateAge(dob)) errors.dob = 'You must be at least 18 years old to join Zimplexline.';
     if (password.length < 8) errors.password = 'Password must be at least 8 characters.';
     if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match.';
     if (!idPhoto) errors.idPhoto = 'Verification ID photo is required.';
@@ -188,7 +188,7 @@ export default function Register() {
           <h2 className="mt-6 text-2xl font-bold text-slate-900">Registration Submitted</h2>
           <div className="mt-4 rounded-lg bg-slate-50 p-4 text-left border border-slate-200">
             <p className="text-sm text-slate-600 leading-relaxed">
-              Welcome to Zenon Plus. Your ID documentation has been uploaded.{' '}
+              Welcome to Zimplexline. Your ID documentation has been uploaded.{' '}
               <span className="font-semibold text-slate-900">{inviteInfo?.parent_name || 'Your manager'}</span>{' '}
               has been notified to review and activate your account.
             </p>
@@ -219,7 +219,7 @@ export default function Register() {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-mono font-black text-xl leading-none">
             Z
           </div>
-          <h2 className="mt-4 text-2xl font-bold text-slate-950">Join Zenon Plus Network</h2>
+          <h2 className="mt-4 text-2xl font-bold text-slate-950">Join Zimplexline Network</h2>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-10 shadow-md">
@@ -229,7 +229,7 @@ export default function Register() {
             <p className="text-sm font-semibold text-blue-900">Team Invitation</p>
             <p className="text-xs text-blue-800 leading-relaxed">
               You have been invited to join{' '}
-              <span className="font-bold">{inviteInfo?.parent_name}</span>'s team on Zenon Plus.
+              <span className="font-bold">{inviteInfo?.parent_name}</span>'s team on Zimplexline.
             </p>
             <div className="flex items-center gap-3 pt-1">
               <span className="text-xs text-blue-700">You are registering as:</span>

@@ -1,7 +1,7 @@
 {
-  "name": "zenon-plus-backend",
+  "name": "zimplexline-backend",
   "version": "1.0.0",
-  "description": "Zenon Plus multi-level affiliate commission management backend",
+  "description": "Zimplexline multi-level affiliate commission management backend",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

@@ -92,7 +92,7 @@ app.use((err, req, res, next) => {
 const PORT = parseInt(process.env.PORT || 3001, 10);
 
 app.listen(PORT, () => {
-  console.log(`Zenon Plus API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+  console.log(`Zimplexline API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
   scheduleMontlyReset();
 });
 

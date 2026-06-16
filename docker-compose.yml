@@ -4,37 +4,37 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: zenon_plus_v2_frontend
+    container_name: zimplexline_frontend
     volumes:
       - frontend_dist:/output
     networks:
-      - zenon-internal
+      - zimplexline-net
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.backend
-    container_name: zenon_plus_v2_backend
+    container_name: zimplexline_backend
     env_file:
       - ./backend/.env
     depends_on:
       - db
     networks:
-      - zenon-internal
+      - zimplexline-net
 
   db:
     image: postgres:15-alpine
-    container_name: zenon_plus_v2_db
+    container_name: zimplexline_db
     environment:
-      POSTGRES_DB: zenon_plus_v2
-      POSTGRES_USER: zenonadmin
-      POSTGRES_PASSWORD: Zenon@2024Secure
+      POSTGRES_DB: zimplexline
+      POSTGRES_USER: zimplexlineadmin
+      POSTGRES_PASSWORD: Zimplexline@2024Secure
     networks:
-      - zenon-internal
+      - zimplexline-net
 
   nginx:
     image: nginx:alpine
-    container_name: zenon_plus_v2_nginx
+    container_name: zimplexline_nginx
     ports:
       - "80:80"
     volumes:
@@ -44,10 +44,10 @@ services:
       - frontend
       - backend
     networks:
-      - zenon-internal
+      - zimplexline-net
 
 networks:
-  zenon-internal:
+  zimplexline-net:
     driver: bridge
 
 volumes:

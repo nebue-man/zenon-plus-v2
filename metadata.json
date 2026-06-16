@@ -1,5 +1,5 @@
 {
-  "name": "Zenon Plus Affiliate Commission Platform",
+  "name": "Zimplexline Affiliate Commission Platform",
   "description": "Multi-level affiliate commission management platform for tracking users, transactions, commissions, and ID verifications.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

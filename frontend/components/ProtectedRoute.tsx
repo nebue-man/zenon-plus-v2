@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
       <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
-          <p className="text-sm font-medium text-slate-500">Initializing Zenon Plus secure session...</p>
+          <p className="text-sm font-medium text-slate-500">Initializing Zimplexline secure session...</p>
         </div>
       </div>
     );

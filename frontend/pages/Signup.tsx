@@ -67,7 +67,7 @@ export default function Signup() {
     if (!dob) {
       errors.dob = 'Date of birth is required.';
     } else if (!validateAge(dob)) {
-      errors.dob = 'You must be at least 18 years old to join Zenon Plus.';
+      errors.dob = 'You must be at least 18 years old to join Zimplexline.';
     }
 
     if (password.length < 8) {
@@ -127,7 +127,7 @@ export default function Signup() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
             <Check className="h-6 w-6 stroke-[3]" />
           </div>
-          <h2 className="mt-6 text-2xl font-bold text-slate-900">Welcome to Zenon Plus</h2>
+          <h2 className="mt-6 text-2xl font-bold text-slate-900">Welcome to Zimplexline</h2>
           <p className="mt-3 text-sm text-slate-500 leading-relaxed">
             Your admin account has been created and verified. Your administrative and commission tracking network is ready.
           </p>
@@ -159,7 +159,7 @@ export default function Signup() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-mono font-black text-xl shadow-lg">
             ZP
           </div>
-          <span className="text-xl font-bold tracking-tight">Zenon Plus</span>
+          <span className="text-xl font-bold tracking-tight">Zimplexline</span>
         </div>
 
         {/* Feature listings */}
@@ -201,7 +201,7 @@ export default function Signup() {
 
         {/* Footer */}
         <p className="text-xs text-slate-500 font-mono">
-          Zenon Plus Affiliate Engine v1.0 • Sri Lankan Rupee (LKR) Native
+          Zimplexline Affiliate Engine v1.0 • Sri Lankan Rupee (LKR) Native
         </p>
       </div>
 
@@ -211,7 +211,7 @@ export default function Signup() {
           <div>
             <div className="lg:hidden flex items-center gap-2 mb-6">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-mono font-bold text-base">Z</div>
-              <span className="text-lg font-bold text-slate-900">Zenon Plus</span>
+              <span className="text-lg font-bold text-slate-900">Zimplexline</span>
             </div>
             
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -259,7 +259,7 @@ export default function Signup() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. admin@zenon.plus"
+                  placeholder="e.g. admin@zimplexline.com"
                   className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-xs outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
                 />
                 {fieldErrors.email && (

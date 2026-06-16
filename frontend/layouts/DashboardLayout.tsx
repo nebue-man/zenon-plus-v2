@@ -103,7 +103,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="w-8 h-8 bg-[#0F172A] rounded-lg flex items-center justify-center">
           <span className="text-white font-bold text-lg">Z+</span>
         </div>
-        <h1 className="text-[#0F172A] font-bold text-xl tracking-tight">Zenon Plus</h1>
+        <h1 className="text-[#0F172A] font-bold text-xl tracking-tight">Zimplexline</h1>
       </div>
 
       {/* User profile section */}

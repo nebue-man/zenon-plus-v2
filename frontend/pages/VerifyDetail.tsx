@@ -252,7 +252,7 @@ export default function VerifyDetail() {
         <div className="space-y-4">
           <p className="text-sm text-slate-650 leading-relaxed">
             Are you sure you want to approve <span className="font-bold text-slate-900">{targetUser.fullName}</span>?
-            This will instantly activate their account and grant access to the Zenon Plus dashboard as a(n) <span className="font-semibold">{targetUser.role}</span>.
+            This will instantly activate their account and grant access to the Zimplexline dashboard as a(n) <span className="font-semibold">{targetUser.role}</span>.
           </p>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

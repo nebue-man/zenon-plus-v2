@@ -1,5 +1,5 @@
 /**
- * Utility functions for formatting values in Zenon Plus
+ * Utility functions for formatting values in Zimplexline
  */
 
 /**

@@ -1,20 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Zimplexline
 
-# Run and deploy your AI Studio app
+Multi-level affiliate commission management platform. Tracks users, transactions, commissions, and ID verifications across a 4-role hierarchy (Admin → Manager → Agent → Sub-agent).
 
-This contains everything you need to run your app locally.
+## Stack
 
-View your app in AI Studio: https://ai.studio/apps/69b67540-973f-4d29-bc06-5038aa3b2e03
+- **Frontend** — React 19, Vite 6, TypeScript, Tailwind CSS v4
+- **Backend** — Node.js, Express, PostgreSQL
+- **Auth** — JWT with role-based access control
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js 20+, PostgreSQL 15+
 
+### Backend
+```bash
+cd backend
+npm install
+cp .env.example .env   # fill in DATABASE_URL, JWT_SECRET
+node app.js
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App runs at `http://localhost:3000`, API at `http://localhost:3001`.
+
+## Role Hierarchy
+
+| Role | Can recruit | Earns commission from |
+|---|---|---|
+| Admin | Managers | — |
+| Manager | Agents | Own deposits (3%), direct agents (1%), deep team (0.3%) |
+| Agent | Sub-agents | Direct sub-agents (2.5–3%), deep team (0.3%) |
+| Sub-agent | — | — |

@@ -1,6 +1,6 @@
 import { UserRole } from '../types';
 
-const TOKEN_KEY = 'zenon_token';
+const TOKEN_KEY = 'zimplexline_token';
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);

@@ -1,4 +1,4 @@
--- Zenon Plus Database Schema
+-- Zimplexline Database Schema
 -- PostgreSQL 15
 
 -- Enable UUID generation

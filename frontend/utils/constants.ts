@@ -1,5 +1,5 @@
 /**
- * Centralized constant values and API endpoint paths for Zenon Plus
+ * Centralized constant values and API endpoint paths for Zimplexline
  */
 
 export const COMMISSION_RATES = {
