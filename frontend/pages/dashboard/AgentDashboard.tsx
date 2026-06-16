@@ -19,7 +19,7 @@ import { EarningsChart } from '../../components/EarningsChart';
 import { SubagentThresholdTable } from '../../components/SubagentThresholdTable';
 import { AgentUnlockBanner } from '../../components/AgentUnlockBanner';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { formatLKR, formatDate } from '../../utils/format';
+import { formatLKR, formatDate, formatPercent } from '../../utils/format';
 import { API_ENDPOINTS } from '../../utils/constants';
 import api from '../../api/axios';
 import {
@@ -491,16 +491,12 @@ export default function AgentDashboard({ activeTab, setActiveTab }: AgentDashboa
                   ) : (
                     commList.map((comm) => (
                       <tr key={comm.id} className="hover:bg-slate-50/50">
-                        <td className="py-4 px-6 font-semibold text-slate-800">{comm.sourceUserName}</td>
+                        <td className="py-4 px-6 font-semibold text-slate-800">{comm.sourceName}</td>
                         <td className="py-4 px-4 font-mono text-xs uppercase text-slate-504">{comm.type.replace(/_/g, ' ')}</td>
-                        <td className="py-4 px-4 font-mono font-bold text-slate-650">{comm.percentage}%</td>
+                        <td className="py-4 px-4 font-mono font-bold text-slate-650">{formatPercent(comm.percentage)}</td>
                         <td className="py-4 px-4 font-mono font-extrabold text-slate-950">{formatLKR(comm.amount)}</td>
                         <td className="py-4 px-4">
-                          {comm.isLocked ? (
-                            <span className="text-[9px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-100 uppercase font-mono">LOCKED</span>
-                          ) : (
-                            <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 uppercase font-mono">UNLOCKED</span>
-                          )}
+                          <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 uppercase font-mono">UNLOCKED</span>
                         </td>
                         <td className="py-4 px-6 font-mono text-xs text-slate-500">{formatDate(comm.date, true)}</td>
                       </tr>

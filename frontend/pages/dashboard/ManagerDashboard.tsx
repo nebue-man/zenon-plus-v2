@@ -590,7 +590,7 @@ export default function ManagerDashboard({ activeTab, setActiveTab }: ManagerDas
                   ) : (
                     commList.map((comm) => (
                       <tr key={comm.id} className="hover:bg-slate-50/50">
-                        <td className="py-4 px-6 font-semibold text-slate-800">{comm.sourceUserName}</td>
+                        <td className="py-4 px-6 font-semibold text-slate-800">{comm.sourceName}</td>
                         <td className="py-4 px-4 font-mono text-slate-500 uppercase text-xs">{comm.type.replace(/_/g, ' ')}</td>
                         <td className="py-4 px-4 font-mono font-bold text-slate-803">{formatPercent(comm.percentage)}</td>
                         <td className="py-4 px-4 font-mono font-extrabold text-slate-950">{formatLKR(comm.amount)}</td>

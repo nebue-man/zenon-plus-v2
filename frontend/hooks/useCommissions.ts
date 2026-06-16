@@ -89,12 +89,15 @@ export function useCommissions() {
         totals.locked += comm.amount;
       }
       
-      if (comm.type === 'own_activity' || comm.type === 'own') {
+      if (comm.type === 'own_deposit' || comm.type === 'own_withdrawal') {
         totals.ownActivity += comm.amount;
-      } else if (comm.type === 'direct_agent' || comm.type === 'direct_agents') {
+      } else if (comm.type === 'direct_agent_deposit' || comm.type === 'direct_agent_withdrawal') {
         totals.directAgent += comm.amount;
-      } else if (comm.type === 'direct_subagent' || comm.type === 'direct_subagents') {
-        totals.directSubagent += comm.amount;
+      } else if (
+        comm.type === 'deep_team_deposit' || comm.type === 'deep_team_withdrawal' ||
+        comm.type === 'agent_deep_team_deposit' || comm.type === 'agent_deep_team_withdrawal'
+      ) {
+        totals.deepTeam += comm.amount;
       } else {
         totals.deepTeam += comm.amount;
       }

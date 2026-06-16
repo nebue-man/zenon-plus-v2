@@ -29,15 +29,16 @@ export interface Transaction {
 
 export interface Commission {
   id: string;
-  earnerId: string;
-  earnerName: string;
+  transactionId: string;
+  beneficiaryId: string;
+  beneficiaryName: string;
+  beneficiaryRole: string;
   sourceUserId: string;
-  sourceUserName: string;
-  type: string; // e.g., 'own_activity', 'direct_agent', 'deep_team', 'direct_subagent'
+  sourceName: string;
+  type: string; // e.g., 'own_deposit', 'direct_agent_deposit', 'deep_team_deposit'
   percentage: number;
   amount: number;
   date: string;
-  isLocked: boolean;
 }
 
 export interface DashboardSummary {

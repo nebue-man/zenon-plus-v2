@@ -883,10 +883,10 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
                     commList.map((comm) => (
                       <tr key={comm.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-4 px-6">
-                          <span className="font-semibold text-slate-900">{comm.earnerName}</span>
+                          <span className="font-semibold text-slate-900">{comm.beneficiaryName}</span>
                         </td>
                         <td className="py-4 px-4 font-medium text-slate-600">
-                          {comm.sourceUserName}
+                          {comm.sourceName}
                         </td>
                         <td className="py-4 px-4 text-xs font-mono text-slate-500 uppercase">
                           {comm.type.replace(/_/g, ' ')}
