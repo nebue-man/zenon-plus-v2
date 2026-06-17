@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS transactions (
   transaction_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   recorded_by        UUID NOT NULL REFERENCES users(id),
   withdrawal_details JSONB,
+  player_id          VARCHAR,
+  bank_slip_url      VARCHAR,
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

@@ -35,6 +35,7 @@ import {
   Search,
   SlidersHorizontal,
   Info,
+  Upload,
 } from 'lucide-react';
 import { User, Transaction, Commission, AuditLog } from '../../types';
 
@@ -122,16 +123,18 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
 
   // Manual Transaction creation modal state
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
-  const [txTargetUserId, setTxTargetUserId] = useState('');
   const [txType, setTxType] = useState<'deposit' | 'withdrawal'>('deposit');
   const [txAmount, setTxAmount] = useState('');
   const [txDate, setTxDate] = useState(new Date().toISOString().slice(0, 10));
+  const [txPlayerId, setTxPlayerId] = useState('');
+  const [txBankSlip, setTxBankSlip] = useState<string | null>(null);
+  const [txBankSlipName, setTxBankSlipName] = useState('');
+  const [txBankSlipDrag, setTxBankSlipDrag] = useState(false);
   const [txWithdrawalCode, setTxWithdrawalCode] = useState('');
   const [txWithdrawalBank, setTxWithdrawalBank] = useState('');
   const [txWithdrawalBranch, setTxWithdrawalBranch] = useState('');
   const [txWithdrawalAccount, setTxWithdrawalAccount] = useState('');
   const [txSubmitting, setTxSubmitting] = useState(false);
-  const [usersDropdown, setUsersDropdown] = useState<User[]>([]);
 
   // Audit Logs Tab
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -210,24 +213,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
     }
   }, [activeTab, usersPage, usersRoleFilter, usersStatusFilter, auditPage]);
 
-  // Load user dropdown lists for transactions manual logging modal
-  useEffect(() => {
-    if (isTxModalOpen) {
-      const loadDropdownUsers = async () => {
-        try {
-          const res = await api.get(API_ENDPOINTS.admin.users, { params: { limit: 100 } });
-          if (res.data?.success) {
-            // Include verified and active users
-            const records = res.data.data?.users || [];
-            setUsersDropdown(records.filter((u: User) => u.status === 'approved'));
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      loadDropdownUsers();
-    }
-  }, [isTxModalOpen]);
 
   // Trigger search on typing
   const handleUsersSearchSubmit = (e: React.FormEvent) => {
@@ -299,10 +284,29 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
   };
 
   // Manual Transaction trigger
+  const handleBankSlipChange = (file: File) => {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
+      showToast('Only JPG, PNG, WebP, and PDF files are accepted for bank slips.', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => { setTxBankSlip(reader.result as string); setTxBankSlipName(file.name); };
+    reader.readAsDataURL(file);
+  };
+
   const handleRecordTxSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!txTargetUserId || !txAmount || Number(txAmount) <= 0) {
-      showToast('Please select a user and provide positive numerical amount.', 'warning');
+    if (!txAmount || Number(txAmount) <= 0) {
+      showToast('Please provide a positive numerical amount.', 'warning');
+      return;
+    }
+    if (txType === 'deposit' && !txPlayerId.trim()) {
+      showToast('Player ID is required for deposits.', 'warning');
+      return;
+    }
+    if (txType === 'deposit' && !txBankSlip) {
+      showToast('Please upload your bank slip to continue.', 'warning');
       return;
     }
     if (txType === 'withdrawal' && (!txWithdrawalCode.trim() || !txWithdrawalBank.trim() || !txWithdrawalBranch.trim() || !txWithdrawalAccount.trim())) {
@@ -313,10 +317,10 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
 
     try {
       const result = await recordTransaction({
-        userId: txTargetUserId,
         type: txType,
         amount: Number(txAmount),
         date: txDate,
+        ...(txType === 'deposit' ? { player_id: txPlayerId, bank_slip: txBankSlip! } : {}),
         ...(txType === 'withdrawal' ? {
           withdrawal_details: {
             withdrawal_code: txWithdrawalCode,
@@ -330,8 +334,10 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
       if (result.success) {
         showToast('Transaction recorded successfully. Commissions generated.', 'success');
         setIsTxModalOpen(false);
-        setTxTargetUserId('');
         setTxAmount('');
+        setTxPlayerId('');
+        setTxBankSlip(null);
+        setTxBankSlipName('');
         setTxWithdrawalCode('');
         setTxWithdrawalBank('');
         setTxWithdrawalBranch('');
@@ -1373,24 +1379,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
       {/* MANUAL RECORD TRANSACTION MODAL */}
       <Modal isOpen={isTxModalOpen} onClose={() => setIsTxModalOpen(false)} title="Record Activity Transaction">
         <form className="space-y-4 font-sans" onSubmit={handleRecordTxSubmit}>
-          
-          {/* Target user selector dropdown */}
-          <div>
-            <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Target Account Holder</label>
-            <select
-              required
-              value={txTargetUserId}
-              onChange={(e) => setTxTargetUserId(e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none"
-            >
-              <option value="">-- Choose verified affiliate --</option>
-              {usersDropdown.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.fullName} ({u.role.toUpperCase()} - {u.id})
-                </option>
-              ))}
-            </select>
-          </div>
 
           {/* Type Toggle Deposit/Withdrawal */}
           <div>
@@ -1419,16 +1407,64 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
 
           {/* Conditional deposit info / withdrawal fields */}
           {txType === 'deposit' ? (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-blue-800">
-                <Info className="h-4 w-4 shrink-0" />
-                <span className="text-xs font-bold uppercase tracking-wide">Deposit Bank Details</span>
+            <div className="space-y-3">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <Info className="h-4 w-4 shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Deposit Bank Details</span>
+                </div>
+                <div className="text-xs text-blue-900 space-y-1 pl-6">
+                  <p><span className="font-semibold">Name:</span> G M K H Kumara</p>
+                  <p><span className="font-semibold">Bank:</span> HNB</p>
+                  <p><span className="font-semibold">Branch:</span> Balangoda</p>
+                  <p><span className="font-semibold">Account Number:</span> 071010018705</p>
+                </div>
               </div>
-              <div className="text-xs text-blue-900 space-y-1 pl-6">
-                <p><span className="font-semibold">Name:</span> G M K H Kumara</p>
-                <p><span className="font-semibold">Bank:</span> HNB</p>
-                <p><span className="font-semibold">Branch:</span> Balangoda</p>
-                <p><span className="font-semibold">Account Number:</span> 071010018705</p>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">Player ID</label>
+                <input
+                  type="text"
+                  required
+                  value={txPlayerId}
+                  onChange={(e) => setTxPlayerId(e.target.value)}
+                  placeholder="Enter player ID"
+                  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">Bank Slip</label>
+                <p className="text-[10px] text-slate-400 mb-1.5">Upload your deposit bank slip or payment screenshot</p>
+                <div
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(true); }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(false); }}
+                  onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(false); if (e.dataTransfer.files?.[0]) handleBankSlipChange(e.dataTransfer.files[0]); }}
+                  className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 transition ${txBankSlipDrag ? 'border-blue-500 bg-blue-50/20' : txBankSlip ? 'border-emerald-300 bg-emerald-50/10' : 'border-slate-300 bg-slate-50 hover:bg-slate-100/60'}`}
+                >
+                  {txBankSlip ? (
+                    <div className="flex flex-col items-center gap-2">
+                      {txBankSlip.startsWith('data:image') && (
+                        <div className="h-16 w-24 overflow-hidden rounded-lg border border-slate-200">
+                          <img src={txBankSlip} alt="Bank slip preview" className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <span className="text-xs text-emerald-800 font-semibold">{txBankSlipName || 'File uploaded'}</span>
+                      <button type="button" onClick={() => { setTxBankSlip(null); setTxBankSlipName(''); }} className="text-[10px] font-bold text-rose-500 hover:underline">Remove</button>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="mx-auto h-6 w-6 text-slate-400" />
+                      <p className="mt-1 text-xs text-slate-600 font-medium">
+                        Drag file or{' '}
+                        <label className="cursor-pointer font-bold text-blue-600 hover:underline">
+                          <span>browse</span>
+                          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" className="sr-only" onChange={(e) => { if (e.target.files?.[0]) handleBankSlipChange(e.target.files[0]); }} />
+                        </label>
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP, PDF up to 5MB</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : (

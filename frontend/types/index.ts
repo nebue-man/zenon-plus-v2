@@ -26,6 +26,8 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   date: string;
+  player_id?: string;
+  bank_slip_url?: string;
   withdrawal_details?: {
     withdrawal_code: string;
     bank: string;

@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { getToken, clearToken } from '../utils/auth';
 
-// Determine base URL: use VITE_API_URL if configured, otherwise default to /api/v1 on the current origin
-const defaultBaseURL = `${window.location.origin}/api/v1`;
-const baseURL = (import.meta as any).env.VITE_API_URL || defaultBaseURL;
+// Determine base URL: if VITE_API_URL is set (production domain), append /api/v1; otherwise use current origin
+const baseURL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL + '/api/v1'
+  : `${window.location.origin}/api/v1`;
 
 const axiosInstance = axios.create({
   baseURL,

@@ -332,7 +332,8 @@ router.get(
         `${cte}
          SELECT t.id, t.user_id AS "userId", u.full_name AS "userName", u.role AS "userRole",
                 t.type, t.amount, t.transaction_date AS date,
-                t.recorded_by AS "createdBy", cb.full_name AS "createdByName"
+                t.recorded_by AS "createdBy", cb.full_name AS "createdByName",
+                t.player_id AS "player_id", t.bank_slip_url AS "bank_slip_url"
          FROM transactions t
          JOIN users u ON t.user_id = u.id
          LEFT JOIN users cb ON cb.id = t.recorded_by
@@ -355,6 +356,8 @@ router.get(
             date: t.date ? new Date(t.date).toISOString() : null,
             createdBy: t.createdBy || undefined,
             createdByName: t.createdByName || undefined,
+            player_id: t.player_id || undefined,
+            bank_slip_url: t.bank_slip_url || undefined,
           })),
           pagination: { page, limit, total, pages: Math.ceil(total / limit) },
         },

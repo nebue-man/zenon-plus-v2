@@ -4,8 +4,9 @@ const { body, param, query } = require('express-validator');
 const db = require('../database');
 const { authenticateToken } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validate');
-const { validateTransactionTarget, buildTransactionFilters } = require('../utils/transactionUtils');
+const { buildTransactionFilters } = require('../utils/transactionUtils');
 const { calculate } = require('../utils/commissionEngine');
+const { saveIdPhoto } = require('../utils/uploadHandler');
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -60,7 +61,7 @@ router.get(
         const dataResult = await db.query(
           `SELECT t.id, t.user_id AS "userId", u.full_name AS "userName", u.role AS "userRole",
                   t.type, t.amount, t.transaction_date AS date, t.recorded_by AS "recordedBy",
-                  cb.full_name AS "recordedByName"
+                  cb.full_name AS "recordedByName", t.player_id AS "player_id", t.bank_slip_url AS "bank_slip_url"
            FROM transactions t
            JOIN users u ON t.user_id = u.id
            LEFT JOIN users cb ON cb.id = t.recorded_by
@@ -73,7 +74,7 @@ router.get(
         return res.json({
           success: true,
           data: {
-            transactions: dataResult.rows.map(formatTransaction),
+            transactions: dataResult.rows.map((t) => formatTransaction(t, role)),
             pagination: { page, limit, total, pages: Math.ceil(total / limit) },
           },
         });
@@ -100,7 +101,7 @@ router.get(
            )
            SELECT t.id, t.user_id AS "userId", u.full_name AS "userName", u.role AS "userRole",
                   t.type, t.amount, t.transaction_date AS date, t.recorded_by AS "recordedBy",
-                  cb.full_name AS "recordedByName"
+                  cb.full_name AS "recordedByName", t.player_id AS "player_id", t.bank_slip_url AS "bank_slip_url"
            FROM transactions t
            JOIN users u ON t.user_id = u.id
            LEFT JOIN users cb ON cb.id = t.recorded_by
@@ -113,7 +114,7 @@ router.get(
         return res.json({
           success: true,
           data: {
-            transactions: dataResult.rows.map(formatTransaction),
+            transactions: dataResult.rows.map((t) => formatTransaction(t, role)),
             pagination: { page, limit, total, pages: Math.ceil(total / limit) },
           },
         });
@@ -129,7 +130,7 @@ router.get(
 
       const dataResult = await db.query(
         `SELECT t.id, t.user_id AS "userId", u.full_name AS "userName", u.role AS "userRole",
-                t.type, t.amount, t.transaction_date AS date
+                t.type, t.amount, t.transaction_date AS date, t.player_id AS "player_id"
          FROM transactions t
          JOIN users u ON t.user_id = u.id
          ${wc}
@@ -141,7 +142,7 @@ router.get(
       return res.json({
         success: true,
         data: {
-          transactions: dataResult.rows.map(formatTransaction),
+          transactions: dataResult.rows.map((t) => formatTransaction(t, role)),
           pagination: { page, limit, total, pages: Math.ceil(total / limit) },
         },
       });
@@ -157,7 +158,6 @@ router.post(
   '/',
   authenticateToken,
   [
-    body('userId').notEmpty().withMessage('userId is required.').isUUID().withMessage('Invalid userId.'),
     body('type').isIn(['deposit', 'withdrawal']).withMessage('type must be deposit or withdrawal.'),
     body('amount').isFloat({ min: 0.01 }).withMessage('amount must be a positive number.'),
     body('date').optional().isISO8601().withMessage('date must be a valid ISO 8601 date.'),
@@ -168,35 +168,19 @@ router.post(
     try {
       await client.query('BEGIN');
 
-      const { userId: targetUserId, type, amount, date, withdrawal_details } = req.body;
-      const recorderId = req.user.id;
-      const recorderRole = req.user.role;
+      const { type, amount, date, withdrawal_details, player_id, bank_slip } = req.body;
+      const userId = req.user.id;
 
-      // Validate target user exists and is active
-      const targetResult = await client.query(
-        'SELECT id, role, verification_status FROM users WHERE id = $1 AND is_deleted = false',
-        [targetUserId]
-      );
-      if (targetResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: 'Target user not found.' });
-      }
-      if (targetResult.rows[0].verification_status !== 'approved') {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ success: false, code: 'USER_NOT_APPROVED', message: 'Target user is not approved.' });
-      }
-
-      const validation = await validateTransactionTarget(recorderId, targetUserId, recorderRole, client);
-      if (!validation.valid) {
-        await client.query('ROLLBACK');
-        return res.status(403).json({ success: false, code: 'FORBIDDEN', message: validation.reason });
+      let bankSlipUrl = null;
+      if (type === 'deposit' && bank_slip) {
+        bankSlipUrl = await saveIdPhoto(bank_slip);
       }
 
       const txResult = await client.query(
-        `INSERT INTO transactions (user_id, type, amount, recorded_by, transaction_date, withdrawal_details)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO transactions (user_id, type, amount, recorded_by, transaction_date, withdrawal_details, player_id, bank_slip_url)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id`,
-        [targetUserId, type, parseFloat(amount), recorderId, date ? new Date(date) : new Date(), withdrawal_details ? JSON.stringify(withdrawal_details) : null]
+        [userId, type, parseFloat(amount), userId, date ? new Date(date) : new Date(), withdrawal_details ? JSON.stringify(withdrawal_details) : null, player_id || null, bankSlipUrl]
       );
 
       const transactionId = txResult.rows[0].id;
@@ -232,7 +216,7 @@ router.get(
       const result = await db.query(
         `SELECT t.id, t.user_id AS "userId", u.full_name AS "userName", u.role AS "userRole",
                 t.type, t.amount, t.transaction_date AS date, t.recorded_by AS "recordedBy",
-                cb.full_name AS "recordedByName"
+                cb.full_name AS "recordedByName", t.player_id AS "player_id", t.bank_slip_url AS "bank_slip_url"
          FROM transactions t
          JOIN users u ON t.user_id = u.id
          LEFT JOIN users cb ON cb.id = t.recorded_by
@@ -277,7 +261,7 @@ router.get(
       return res.json({
         success: true,
         data: {
-          ...formatTransaction(tx),
+          ...formatTransaction(tx, role),
           commissions: commResult.rows.map((c) => ({
             id: c.id,
             beneficiaryId: c.beneficiaryId,
@@ -295,8 +279,8 @@ router.get(
   }
 );
 
-function formatTransaction(t) {
-  return {
+function formatTransaction(t, role) {
+  const result = {
     id: t.id,
     userId: t.userId,
     userName: t.userName,
@@ -306,7 +290,12 @@ function formatTransaction(t) {
     date: t.date ? new Date(t.date).toISOString() : null,
     recordedBy: t.recordedBy || undefined,
     recordedByName: t.recordedByName || undefined,
+    player_id: t.player_id || undefined,
   };
+  if (role === 'admin') {
+    result.bank_slip_url = t.bank_slip_url || undefined;
+  }
+  return result;
 }
 
 module.exports = router;

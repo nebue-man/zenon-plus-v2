@@ -75,10 +75,11 @@ export function useTransactions() {
   }, [filters.page, filters.limit, filters.type, filters.dateFrom, filters.dateTo, fetchTransactions]);
 
   const recordTransaction = async (txData: {
-    userId: string;
     type: 'deposit' | 'withdrawal';
     amount: number;
     date: string;
+    player_id?: string;
+    bank_slip?: string;
     withdrawal_details?: {
       withdrawal_code: string;
       bank: string;
@@ -87,9 +88,7 @@ export function useTransactions() {
     };
   }) => {
     try {
-      const endpoint = user?.role === 'admin' 
-        ? API_ENDPOINTS.admin.transactionsManual 
-        : API_ENDPOINTS.transactions.create;
+      const endpoint = API_ENDPOINTS.transactions.create;
 
       const response = await api.post(endpoint, txData);
       if (response.data?.success) {
