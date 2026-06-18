@@ -6,7 +6,6 @@ const { authenticateToken } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validate');
 const { buildTransactionFilters } = require('../utils/transactionUtils');
 const { calculate } = require('../utils/commissionEngine');
-const { saveIdPhoto } = require('../utils/uploadHandler');
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -171,19 +170,14 @@ router.post(
     try {
       await client.query('BEGIN');
 
-      const { type, amount, date, withdrawal_details, player_id, bank_slip } = req.body;
+      const { type, amount, date, withdrawal_details, player_id } = req.body;
       const userId = req.user.id;
 
-      let bankSlipUrl = null;
-      if (type === 'deposit' && bank_slip) {
-        bankSlipUrl = await saveIdPhoto(bank_slip);
-      }
-
       const txResult = await client.query(
-        `INSERT INTO transactions (user_id, type, amount, recorded_by, transaction_date, withdrawal_details, player_id, bank_slip_url, transaction_status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
+        `INSERT INTO transactions (user_id, type, amount, recorded_by, transaction_date, withdrawal_details, player_id, transaction_status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
          RETURNING id, transaction_date`,
-        [userId, type, parseFloat(amount), userId, date ? new Date(date) : new Date(), withdrawal_details ? JSON.stringify(withdrawal_details) : null, player_id || null, bankSlipUrl]
+        [userId, type, parseFloat(amount), userId, date ? new Date(date) : new Date(), withdrawal_details ? JSON.stringify(withdrawal_details) : null, player_id || null]
       );
 
       const transactionId = txResult.rows[0].id;
@@ -224,7 +218,7 @@ router.post(
         if (type === 'deposit') {
           notifType = 'deposit_pending';
           notifTitle = 'New Deposit — Pending Approval';
-          notifMessage = `User: ${userFullName} (${userRole})\nAmount: LKR ${parseFloat(amount).toFixed(2)}\nPlayer ID: ${player_id || 'Not provided'}\nDate: ${txDateStr}\nBank Slip: ${bankSlipUrl || 'Not provided'}`;
+          notifMessage = `User: ${userFullName} (${userRole})\nAmount: LKR ${parseFloat(amount).toFixed(2)}\nPlayer ID: ${player_id || 'Not provided'}\nDate: ${txDateStr}`;
         } else {
           const wd = withdrawal_details || {};
           notifType = 'withdrawal_pending';

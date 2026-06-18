@@ -4,7 +4,6 @@ import { useDashboard } from '../../hooks/useDashboard';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useCommissions } from '../../hooks/useCommissions';
 import { useVerifications } from '../../hooks/useVerifications';
-import { useBankSlips } from '../../hooks/useBankSlips';
 import { useAuth } from '../../context/useAuth';
 import { SummaryCard } from '../../components/SummaryCard';
 import { Badge } from '../../components/Badge';
@@ -12,7 +11,6 @@ import { Pagination } from '../../components/Pagination';
 import { Modal } from '../../components/Modal';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { IDPhotoViewer } from '../../components/IDPhotoViewer';
-import { BankSlipQueue } from '../../components/BankSlipQueue';
 import { EarningsChart } from '../../components/EarningsChart';
 import { Toast, ToastType } from '../../components/Toast';
 import { InviteSection } from '../../components/InviteSection';
@@ -35,7 +33,6 @@ import {
   Search,
   SlidersHorizontal,
   Info,
-  Upload,
 } from 'lucide-react';
 import { User, Transaction, Commission, AuditLog } from '../../types';
 
@@ -82,9 +79,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
     refresh: refreshVerifs,
   } = useVerifications();
 
-  // Bank Slip Review Queue (admin sees pending slips from managers)
-  const { reviewQueue: slipQueue, loadingQueue: slipQueueLoading, reviewing: slipReviewing, reviewSlip } = useBankSlips();
-
   // Component-local state variables for modals & overlays
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState<ToastType>('success');
@@ -127,9 +121,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
   const [txAmount, setTxAmount] = useState('');
   const [txDate, setTxDate] = useState(new Date().toISOString().slice(0, 10));
   const [txPlayerId, setTxPlayerId] = useState('');
-  const [txBankSlip, setTxBankSlip] = useState<string | null>(null);
-  const [txBankSlipName, setTxBankSlipName] = useState('');
-  const [txBankSlipDrag, setTxBankSlipDrag] = useState(false);
   const [txWithdrawalCode, setTxWithdrawalCode] = useState('');
   const [txWithdrawalBank, setTxWithdrawalBank] = useState('');
   const [txWithdrawalBranch, setTxWithdrawalBranch] = useState('');
@@ -283,18 +274,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
     }
   };
 
-  // Manual Transaction trigger
-  const handleBankSlipChange = (file: File) => {
-    if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
-      showToast('Only JPG, PNG, WebP, and PDF files are accepted for bank slips.', 'warning');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => { setTxBankSlip(reader.result as string); setTxBankSlipName(file.name); };
-    reader.readAsDataURL(file);
-  };
-
   const handleRecordTxSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!txAmount || Number(txAmount) <= 0) {
@@ -303,10 +282,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
     }
     if (txType === 'deposit' && !txPlayerId.trim()) {
       showToast('Player ID is required for deposits.', 'warning');
-      return;
-    }
-    if (txType === 'deposit' && !txBankSlip) {
-      showToast('Please upload your bank slip to continue.', 'warning');
       return;
     }
     if (txType === 'withdrawal' && (!txWithdrawalCode.trim() || !txWithdrawalBank.trim() || !txWithdrawalBranch.trim() || !txWithdrawalAccount.trim())) {
@@ -320,7 +295,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
         type: txType,
         amount: Number(txAmount),
         date: txDate,
-        ...(txType === 'deposit' ? { player_id: txPlayerId, bank_slip: txBankSlip! } : {}),
+        ...(txType === 'deposit' ? { player_id: txPlayerId } : {}),
         ...(txType === 'withdrawal' ? {
           withdrawal_details: {
             withdrawal_code: txWithdrawalCode,
@@ -336,8 +311,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
         setIsTxModalOpen(false);
         setTxAmount('');
         setTxPlayerId('');
-        setTxBankSlip(null);
-        setTxBankSlipName('');
         setTxWithdrawalCode('');
         setTxWithdrawalBank('');
         setTxWithdrawalBranch('');
@@ -838,14 +811,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
               onPageChange={(p) => setTxFilters({ page: p })}
             />
           </div>
-
-          {/* Bank Slip Review Queue — managers' pending slips awaiting admin approval */}
-          <BankSlipQueue
-            queue={slipQueue}
-            loading={slipQueueLoading}
-            reviewing={slipReviewing}
-            onReview={reviewSlip}
-          />
 
         </div>
       )}
@@ -1459,41 +1424,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
                   placeholder="Enter player ID"
                   className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-blue-500"
                 />
-              </div>
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-500 mb-1">Bank Slip</label>
-                <p className="text-[10px] text-slate-400 mb-1.5">Upload your deposit bank slip or payment screenshot</p>
-                <div
-                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(true); }}
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(true); }}
-                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(false); }}
-                  onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setTxBankSlipDrag(false); if (e.dataTransfer.files?.[0]) handleBankSlipChange(e.dataTransfer.files[0]); }}
-                  className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 transition ${txBankSlipDrag ? 'border-blue-500 bg-blue-50/20' : txBankSlip ? 'border-emerald-300 bg-emerald-50/10' : 'border-slate-300 bg-slate-50 hover:bg-slate-100/60'}`}
-                >
-                  {txBankSlip ? (
-                    <div className="flex flex-col items-center gap-2">
-                      {txBankSlip.startsWith('data:image') && (
-                        <div className="h-16 w-24 overflow-hidden rounded-lg border border-slate-200">
-                          <img src={txBankSlip} alt="Bank slip preview" className="h-full w-full object-cover" />
-                        </div>
-                      )}
-                      <span className="text-xs text-emerald-800 font-semibold">{txBankSlipName || 'File uploaded'}</span>
-                      <button type="button" onClick={() => { setTxBankSlip(null); setTxBankSlipName(''); }} className="text-[10px] font-bold text-rose-500 hover:underline">Remove</button>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <Upload className="mx-auto h-6 w-6 text-slate-400" />
-                      <p className="mt-1 text-xs text-slate-600 font-medium">
-                        Drag file or{' '}
-                        <label className="cursor-pointer font-bold text-blue-600 hover:underline">
-                          <span>browse</span>
-                          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" className="sr-only" onChange={(e) => { if (e.target.files?.[0]) handleBankSlipChange(e.target.files[0]); }} />
-                        </label>
-                      </p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP, PDF up to 5MB</p>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           ) : (
