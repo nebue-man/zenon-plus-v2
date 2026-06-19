@@ -37,42 +37,62 @@ import {
 } from 'lucide-react';
 import { User, Transaction, Commission, AuditLog, CommissionRate } from '../../types';
 
-const THRESHOLD_RATE_KEYS = new Set(['agent_unlock_threshold', 'subagent_monthly_threshold']);
+const THRESHOLD_RATE_KEYS = new Set(['agent_unlock_threshold']);
 
 const RATE_GROUPS = [
   {
-    title: 'Manager Rates',
-    subtitle: 'Commissions earned by Managers',
-    badge: 'Manager',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    title: 'Actor Self-Earn (All Roles)',
+    subtitle: 'Every actor earns this from their own transaction',
+    badge: 'All Roles',
+    badgeClass: 'bg-slate-100 text-slate-700 border-slate-300',
     rows: [
-      { key: 'manager_own_deposit',               label: 'Own Deposit',               desc: 'Commission when Manager records own deposit',            placeholder: '3 (system default)' },
-      { key: 'manager_own_withdrawal',             label: 'Own Withdrawal',             desc: 'Commission when Manager records own withdrawal',         placeholder: '1 (system default)' },
-      { key: 'manager_direct_agent_deposit',       label: 'Direct Agent Deposit',       desc: 'Commission from direct agent deposit activity',         placeholder: '1 (system default)' },
-      { key: 'manager_direct_agent_withdrawal',    label: 'Direct Agent Withdrawal',    desc: 'Commission from direct agent withdrawal activity',      placeholder: '0.4 (system default)' },
-      { key: 'manager_deep_team_deposit',          label: 'Deep Team Deposit',          desc: 'Commission from deep team deposit activity',            placeholder: '0.3 (system default)' },
-      { key: 'manager_deep_team_withdrawal',       label: 'Deep Team Withdrawal',       desc: 'Commission from deep team withdrawal activity',         placeholder: '0.1 (system default)' },
+      { key: 'actor_own_commission_deposit',    label: 'Own Deposit',    desc: 'Actor earns on their own deposit (3% for all roles)',    placeholder: '3 (system default)' },
+      { key: 'actor_own_commission_withdrawal', label: 'Own Withdrawal', desc: 'Actor earns on their own withdrawal (1% for all roles)', placeholder: '1 (system default)' },
     ],
   },
   {
-    title: 'Agent Rates',
-    subtitle: 'Commissions earned by Agents (direct sub-agents only)',
+    title: 'Manager Transaction Rates',
+    subtitle: 'Admin share when a Manager is the transaction actor',
+    badge: 'Manager',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    rows: [
+      { key: 'admin_deposit_from_manager',    label: 'Admin Share — Deposit',    desc: 'Admin earns when a Manager records a deposit',    placeholder: '2 (system default)' },
+      { key: 'admin_withdrawal_from_manager', label: 'Admin Share — Withdrawal', desc: 'Admin earns when a Manager records a withdrawal', placeholder: '1 (system default)' },
+    ],
+  },
+  {
+    title: 'Agent Transaction Rates',
+    subtitle: 'Manager and Admin shares when an Agent is the transaction actor',
     badge: 'Agent',
     badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
     rows: [
-      { key: 'agent_direct_subagent_deposit_low',  label: 'Sub-agent Deposit (under 20k/month)',  desc: 'Rate when sub-agent monthly deposits are below 20,000 LKR',      placeholder: '2.5 (system default)' },
-      { key: 'agent_direct_subagent_deposit_high', label: 'Sub-agent Deposit (over 20k/month)',   desc: 'Rate when sub-agent monthly deposits reach 20,000 LKR or more', placeholder: '3 (system default)' },
-      { key: 'agent_direct_subagent_withdrawal',   label: 'Sub-agent Withdrawal',                 desc: 'Commission on direct sub-agent withdrawal activity',            placeholder: '1 (system default)' },
+      { key: 'manager_from_agent_deposit',    label: 'Manager Share — Deposit',    desc: "Manager earns from direct Agent's deposit",    placeholder: '1 (system default)' },
+      { key: 'manager_from_agent_withdrawal', label: 'Manager Share — Withdrawal', desc: "Manager earns from direct Agent's withdrawal", placeholder: '0.4 (system default)' },
+      { key: 'admin_deposit_from_agent',      label: 'Admin Share — Deposit',      desc: 'Admin earns when an Agent records a deposit',    placeholder: '1 (system default)' },
+      { key: 'admin_withdrawal_from_agent',   label: 'Admin Share — Withdrawal',   desc: 'Admin earns when an Agent records a withdrawal', placeholder: '0.6 (system default)' },
+    ],
+  },
+  {
+    title: 'Sub-agent Transaction Rates',
+    subtitle: 'Commission splits when a Sub-agent is the transaction actor',
+    badge: 'Sub-agent',
+    badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
+    rows: [
+      { key: 'direct_parent_deposit',          label: 'Direct Parent — Deposit',        desc: 'Direct parent (Agent or Sub-agent) earns from child deposit',    placeholder: '1 (system default)' },
+      { key: 'direct_parent_withdrawal',       label: 'Direct Parent — Withdrawal',     desc: 'Direct parent (Agent or Sub-agent) earns from child withdrawal', placeholder: '0.4 (system default)' },
+      { key: 'manager_deep_team_deposit',      label: 'Manager Deep Team — Deposit',    desc: 'Manager earns from any Sub-agent deposit in their team',         placeholder: '0.3 (system default)' },
+      { key: 'manager_deep_team_withdrawal',   label: 'Manager Deep Team — Withdrawal', desc: 'Manager earns from any Sub-agent withdrawal in their team',      placeholder: '0.1 (system default)' },
+      { key: 'admin_deposit_from_subagent',    label: 'Admin Share — Deposit',          desc: 'Admin earns when a Sub-agent records a deposit',                 placeholder: '0.7 (system default)' },
+      { key: 'admin_withdrawal_from_subagent', label: 'Admin Share — Withdrawal',       desc: 'Admin earns when a Sub-agent records a withdrawal',              placeholder: '0.5 (system default)' },
     ],
   },
   {
     title: 'Thresholds',
-    subtitle: 'Monthly deposit unlock requirements',
+    subtitle: 'Monthly unlock requirements',
     badge: 'Threshold',
     badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
     rows: [
-      { key: 'agent_unlock_threshold',      label: 'Agent Unlock Threshold (LKR)',      desc: 'Min own monthly deposits for agent to earn sub-agent commissions', placeholder: '10000 (system default)' },
-      { key: 'subagent_monthly_threshold',  label: 'Sub-agent Monthly Threshold (LKR)', desc: 'Monthly volume at which sub-agent deposit rate upgrades to high tier', placeholder: '20000 (system default)' },
+      { key: 'agent_unlock_threshold', label: 'Agent Unlock Threshold (LKR)', desc: 'Min own monthly deposits for Agent to earn Sub-agent commissions', placeholder: '10000 (system default)' },
     ],
   },
 ];
