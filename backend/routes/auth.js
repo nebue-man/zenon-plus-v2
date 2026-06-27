@@ -29,6 +29,7 @@ function formatUser(u) {
     id: u.id,
     fullName: u.full_name,
     email: u.email || undefined,
+    phone_number: u.phone_number || undefined,
     dob: u.date_of_birth ? new Date(u.date_of_birth).toISOString().split('T')[0] : undefined,
     role: u.role,
     status: u.verification_status,
@@ -40,6 +41,13 @@ function formatUser(u) {
     promo_screenshot_url: u.promo_screenshot_url || undefined,
     rejectReason: u.reject_reason || undefined,
   };
+}
+
+function validatePhone(phone) {
+  if (!phone || !phone.trim()) return false;
+  if (!/^[+\d\s\-]+$/.test(phone.trim())) return false;
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
 }
 
 function isAtLeast18(dobString) {
@@ -91,10 +99,14 @@ router.post(
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { fullName, email, dob, password } = req.body;
+      const { fullName, email, dob, password, phoneNumber } = req.body;
 
       if (!isAtLeast18(dob)) {
         return res.status(400).json({ success: false, code: 'AGE_RESTRICTION', message: 'You must be at least 18 years old.' });
+      }
+
+      if (!validatePhone(phoneNumber)) {
+        return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: 'Please enter a valid phone number.' });
       }
 
       const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -105,10 +117,10 @@ router.post(
       const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
       const result = await db.query(
-        `INSERT INTO users (full_name, email, date_of_birth, password_hash, role, verification_status)
-         VALUES ($1, $2, $3, $4, 'admin', 'approved')
+        `INSERT INTO users (full_name, email, phone_number, date_of_birth, password_hash, role, verification_status)
+         VALUES ($1, $2, $3, $4, $5, 'admin', 'approved')
          RETURNING id, full_name, role, parent_id`,
-        [fullName, email, dob, passwordHash]
+        [fullName, email, phoneNumber.trim(), dob, passwordHash]
       );
 
       const user = result.rows[0];
@@ -202,10 +214,14 @@ router.post(
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { fullName, dob, password, token, promoScreenshot } = req.body;
+      const { fullName, dob, password, token, promoScreenshot, phoneNumber } = req.body;
 
       if (!isAtLeast18(dob)) {
         return res.status(400).json({ success: false, code: 'AGE_RESTRICTION', message: 'You must be at least 18 years old.' });
+      }
+
+      if (!validatePhone(phoneNumber)) {
+        return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: 'Please enter a valid phone number.' });
       }
 
       const { valid, reason, link } = await validateInviteToken(token);
@@ -220,10 +236,10 @@ router.post(
       const screenshotUrl = await saveIdPhoto(promoScreenshot);
 
       const result = await db.query(
-        `INSERT INTO users (full_name, date_of_birth, password_hash, role, parent_id, verification_status, promo_screenshot_url)
-         VALUES ($1, $2, $3, $4, $5, 'pending', $6)
+        `INSERT INTO users (full_name, phone_number, date_of_birth, password_hash, role, parent_id, verification_status, promo_screenshot_url)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)
          RETURNING id, full_name, role`,
-        [fullName, dob, passwordHash, childRole, parentId, screenshotUrl]
+        [fullName, phoneNumber.trim(), dob, passwordHash, childRole, parentId, screenshotUrl]
       );
 
       const newUser = result.rows[0];
@@ -263,7 +279,7 @@ router.post(
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT u.id, u.full_name, u.email, u.date_of_birth, u.role, u.verification_status,
+      `SELECT u.id, u.full_name, u.email, u.phone_number, u.date_of_birth, u.role, u.verification_status,
               u.parent_id, u.id_photo_url, u.promo_screenshot_url, u.reject_reason, u.created_at,
               p.full_name AS parent_name,
               (SELECT COUNT(*) FROM users c WHERE c.parent_id = u.id AND c.is_deleted = false) AS children_count
@@ -604,7 +620,7 @@ router.patch('/invite/deactivate/:token', authenticateToken, async (req, res) =>
 // POST /auth/register/direct-agent — Public, no invite token required
 router.post('/register/direct-agent', upload.single('promo_screenshot'), async (req, res) => {
   try {
-    const { full_name, date_of_birth, password, confirm_password } = req.body;
+    const { full_name, date_of_birth, password, confirm_password, phone_number } = req.body;
 
     if (!full_name || !full_name.trim()) {
       return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: 'Full name is required.' });
@@ -614,6 +630,9 @@ router.post('/register/direct-agent', upload.single('promo_screenshot'), async (
     }
     if (!isAtLeast18(date_of_birth)) {
       return res.status(400).json({ success: false, code: 'AGE_RESTRICTION', message: 'You must be at least 18 years old.' });
+    }
+    if (!validatePhone(phone_number)) {
+      return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: 'Please enter a valid phone number.' });
     }
     if (!password || password.length < 8) {
       return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: 'Password must be at least 8 characters.' });
@@ -647,10 +666,10 @@ router.post('/register/direct-agent', upload.single('promo_screenshot'), async (
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await db.query(
-      `INSERT INTO users (full_name, date_of_birth, password_hash, role, parent_id, verification_status, promo_screenshot_url)
-       VALUES ($1, $2, $3, 'direct_agent', $4, 'pending', $5)
+      `INSERT INTO users (full_name, phone_number, date_of_birth, password_hash, role, parent_id, verification_status, promo_screenshot_url)
+       VALUES ($1, $2, $3, $4, 'direct_agent', $5, 'pending', $6)
        RETURNING id, full_name, role`,
-      [full_name.trim(), date_of_birth, passwordHash, adminId, screenshotUrl]
+      [full_name.trim(), phone_number.trim(), date_of_birth, passwordHash, adminId, screenshotUrl]
     );
 
     const newUser = result.rows[0];

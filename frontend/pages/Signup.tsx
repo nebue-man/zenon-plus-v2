@@ -13,6 +13,7 @@ export default function Signup() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [dob, setDob] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   // Frontend UI states
@@ -70,6 +71,11 @@ export default function Signup() {
       errors.dob = 'You must be at least 18 years old to join Zimplexline.';
     }
 
+    const phoneDigits = phoneNumber.replace(/\D/g, '');
+    if (!phoneNumber.trim() || !/^[+\d\s\-]+$/.test(phoneNumber.trim()) || phoneDigits.length < 7 || phoneDigits.length > 15) {
+      errors.phoneNumber = 'Please enter a valid phone number.';
+    }
+
     if (password.length < 8) {
       errors.password = 'Password must be at least 8 characters.';
     }
@@ -94,6 +100,7 @@ export default function Signup() {
         fullName: fullName.trim(),
         email: email.trim(),
         dob,
+        phoneNumber: phoneNumber.trim(),
         password,
       };
 
@@ -284,6 +291,25 @@ export default function Signup() {
               </div>
               {fieldErrors.dob && (
                 <p className="mt-1 text-xs text-rose-650 font-medium">{fieldErrors.dob}</p>
+              )}
+            </div>
+
+            {/* Phone Number Field */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                required
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Enter your phone number"
+                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-xs outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100"
+              />
+              <p className="mt-1 text-[11px] text-slate-400">We may contact you on this number for account verification purposes</p>
+              {fieldErrors.phoneNumber && (
+                <p className="mt-1 text-xs text-rose-600">{fieldErrors.phoneNumber}</p>
               )}
             </div>
 

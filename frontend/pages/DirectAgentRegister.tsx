@@ -10,6 +10,7 @@ export default function DirectAgentRegister() {
 
   const [fullName, setFullName] = useState('');
   const [dob, setDob] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -57,6 +58,10 @@ export default function DirectAgentRegister() {
     if (!fullName.trim()) e.fullName = 'Full name is required.';
     if (!dob) e.dob = 'Date of birth is required.';
     else if (!isAtLeast18(dob)) e.dob = 'You must be at least 18 years old.';
+    const phoneDigits = phoneNumber.replace(/\D/g, '');
+    if (!phoneNumber.trim() || !/^[+\d\s\-]+$/.test(phoneNumber.trim()) || phoneDigits.length < 7 || phoneDigits.length > 15) {
+      e.phoneNumber = 'Please enter a valid phone number.';
+    }
     if (!password) e.password = 'Password is required.';
     else if (password.length < 8) e.password = 'Password must be at least 8 characters.';
     if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match.';
@@ -75,6 +80,7 @@ export default function DirectAgentRegister() {
       const formData = new FormData();
       formData.append('full_name', fullName.trim());
       formData.append('date_of_birth', dob);
+      formData.append('phone_number', phoneNumber.trim());
       formData.append('password', password);
       formData.append('confirm_password', confirmPassword);
       formData.append('promo_screenshot', screenshotFile!);
@@ -182,6 +188,22 @@ export default function DirectAgentRegister() {
                 className={`block w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:ring-3 focus:ring-blue-100 ${errors.dob ? 'border-rose-400 focus:border-rose-500' : 'border-slate-300 focus:border-blue-500'}`}
               />
               {errors.dob && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.dob}</p>}
+            </div>
+
+            {/* Phone Number */}
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                Phone Number <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Enter your phone number"
+                className={`block w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:ring-3 focus:ring-blue-100 ${errors.phoneNumber ? 'border-rose-400 focus:border-rose-500' : 'border-slate-300 focus:border-blue-500'}`}
+              />
+              <p className="mt-1 text-[11px] text-slate-400">We may contact you on this number for account verification purposes</p>
+              {errors.phoneNumber && <p className="mt-1 text-xs text-rose-600 font-medium">{errors.phoneNumber}</p>}
             </div>
 
             {/* Password */}

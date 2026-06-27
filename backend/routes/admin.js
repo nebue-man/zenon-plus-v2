@@ -66,7 +66,7 @@ router.get(
 
       const dataResult = await db.query(
         `${cte}
-         SELECT u.id, u.full_name AS "fullName", u.email, u.role, u.verification_status AS status,
+         SELECT u.id, u.full_name AS "fullName", u.email, u.phone_number AS "phone_number", u.role, u.verification_status AS status,
                 u.parent_id AS "parentId",
                 CASE WHEN u.role = 'manager' THEN NULL ELSE p.full_name END AS "parentName",
                 u.created_at AS "joinedAt", u.is_deleted AS "isDeleted", u.reject_reason AS "rejectReason",
@@ -83,6 +83,7 @@ router.get(
         id: u.id,
         fullName: u.fullName,
         email: u.email || undefined,
+        phone_number: u.phone_number || undefined,
         role: u.role,
         status: u.status,
         parentId: u.parentId || undefined,
@@ -131,7 +132,7 @@ router.get(
       }
 
       const result = await db.query(
-        `SELECT u.id, u.full_name AS "fullName", u.email, u.date_of_birth AS dob,
+        `SELECT u.id, u.full_name AS "fullName", u.email, u.phone_number AS "phone_number", u.date_of_birth AS dob,
                 u.role, u.verification_status AS status, u.parent_id AS "parentId",
                 CASE WHEN u.role = 'manager' THEN NULL ELSE p.full_name END AS "parentName",
                 u.id_photo_url AS "idPhoto",
@@ -155,6 +156,7 @@ router.get(
           id: u.id,
           fullName: u.fullName,
           email: u.email || undefined,
+          phone_number: u.phone_number || undefined,
           dob: u.dob ? new Date(u.dob).toISOString().split('T')[0] : undefined,
           role: u.role,
           status: u.status,

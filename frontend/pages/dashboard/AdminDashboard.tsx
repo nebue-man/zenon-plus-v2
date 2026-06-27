@@ -1459,6 +1459,10 @@ export default function AdminDashboard({ activeTab, setActiveTab }: AdminDashboa
                     </div>
                   )}
                   <div className="flex justify-between py-2 font-medium">
+                    <span className="text-slate-400 font-sans">Phone:</span>
+                    <span className="text-slate-800">{selectedUser.phone_number || '—'}</span>
+                  </div>
+                  <div className="flex justify-between py-2 font-medium">
                     <span className="text-slate-400">Date of Birth:</span>
                     <span className="text-slate-900 font-mono">{selectedUser.dob ? formatDate(selectedUser.dob) : 'N/A'}</span>
                   </div>

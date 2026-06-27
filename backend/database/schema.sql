@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name           VARCHAR NOT NULL,
   email               VARCHAR UNIQUE,
+  phone_number        VARCHAR(20),
   date_of_birth       DATE NOT NULL,
   password_hash       VARCHAR NOT NULL,
   role                user_role NOT NULL,

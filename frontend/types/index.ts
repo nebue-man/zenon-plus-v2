@@ -6,6 +6,7 @@ export interface User {
   id: string;
   fullName: string;
   email?: string;
+  phone_number?: string;
   dob?: string;
   role: UserRole;
   status: UserStatus;
