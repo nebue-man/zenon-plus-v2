@@ -259,36 +259,27 @@ export default function AgentDashboard({ activeTab, setActiveTab }: AgentDashboa
             </div>
           )}
 
-          {/* Invitation Recruitment Section (Only visible if Agent is fully Unlocked & Active) */}
-          {isUnlocked ? (
-            <div className="rounded-xl border border-[#93C5FD] bg-[#EFF6FF] p-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-in slide-in-from-top-1 duration-200">
-              <div className="space-y-1">
-                <h4 className="font-bold text-blue-950 text-sm">Grow Your Sub-agent Hierarchy</h4>
-                <p className="text-xs text-blue-800 leading-relaxed max-w-lg">
-                  Congratulations! You're unlocked. Copy and share your direct team link to onboard up to 10 sub-agents.
-                </p>
-                {inviteLink && (
-                  <p className="font-mono text-[11px] text-blue-700 bg-white border border-blue-100 p-1.5 rounded inline-block font-semibold">
-                    {inviteLink}
-                  </p>
-                )}
-              </div>
-
-              <button
-                onClick={handleCopyInvite}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-sm bg-[#0F172A] px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition cursor-pointer uppercase tracking-wider"
-              >
-                <Copy className="h-4 w-4" /> Copy Recruit Link
-              </button>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 flex gap-3 text-slate-650 text-xs shadow-sm">
-              <Info className="h-4.5 w-4.5 text-slate-400 shrink-0 mt-0.5" />
-              <p>
-                Recruitment links are locked. Secure <span className="font-bold text-slate-900">LKR 100,000</span> in downline deposits to generate invite links.
+          {/* Invitation Recruitment Section */}
+          <div className="rounded-xl border border-[#93C5FD] bg-[#EFF6FF] p-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-in slide-in-from-top-1 duration-200">
+            <div className="space-y-1">
+              <h4 className="font-bold text-blue-950 text-sm">Grow Your Sub-agent Hierarchy</h4>
+              <p className="text-xs text-blue-800 leading-relaxed max-w-lg">
+                Copy and share your direct team link to onboard sub-agents.
               </p>
+              {inviteLink && (
+                <p className="font-mono text-[11px] text-blue-700 bg-white border border-blue-100 p-1.5 rounded inline-block font-semibold">
+                  {inviteLink}
+                </p>
+              )}
             </div>
-          )}
+
+            <button
+              onClick={handleCopyInvite}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-sm bg-[#0F172A] px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition cursor-pointer uppercase tracking-wider"
+            >
+              <Copy className="h-4 w-4" /> Copy Recruit Link
+            </button>
+          </div>
 
           {/* Subagent Threshold Triggers table */}
           <div>
@@ -318,7 +309,7 @@ export default function AgentDashboard({ activeTab, setActiveTab }: AgentDashboa
       {activeTab === 'team' && (
         <div className="space-y-6 animate-in fade-in duration-200">
 
-          <InviteSection userRole="agent" agentLocked={!isUnlocked} />
+          <InviteSection userRole="agent" agentLocked={false} />
 
           <div className="border-t border-slate-200" />
 
